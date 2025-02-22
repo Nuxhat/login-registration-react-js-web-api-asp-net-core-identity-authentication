@@ -1,5 +1,4 @@
 import { fileURLToPath, URL } from 'node:url';
-
 import { defineConfig } from 'vite';
 import plugin from '@vitejs/plugin-react';
 import fs from 'fs';
@@ -25,14 +24,16 @@ if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
         '--format',
         'Pem',
         '--no-password',
-    ], { stdio: 'inherit', }).status) {
+    ], { stdio: 'inherit' }).status) {
         throw new Error("Could not create certificate.");
     }
 }
 
-const target = env.ASPNETCORE_HTTPS_PORT ? `https://localhost:${env.ASPNETCORE_HTTPS_PORT}` :
-    env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : 'https://localhost:7239';
-
+const target = env.ASPNETCORE_HTTPS_PORT
+    ? `https://localhost:${env.ASPNETCORE_HTTPS_PORT}`
+    : env.ASPNETCORE_URLS
+    ? env.ASPNETCORE_URLS.split(';')[0]
+    : 'https://localhost:7239';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -45,18 +46,15 @@ export default defineConfig({
     server: {
         proxy: {
             '^/weatherforecast': {
-                target: "https://localhost:7239",
+                target: target,
                 secure: false
             },
             '^/api': {
-                target: "https://localhost:7239",
+                target: target,
                 secure: false
             }
         },
         port: 5173,
-        https: {
-            key: fs.readFileSync(keyFilePath),
-            cert: fs.readFileSync(certFilePath),
-        }
+        https: false // Make sure this is properly formatted
     }
 });
